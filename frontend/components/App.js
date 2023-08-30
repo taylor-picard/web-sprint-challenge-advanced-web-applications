@@ -94,8 +94,8 @@ export default function App() {
     // to inspect the response from the server.
   }
 
-  const updateArticle = ({ article_id, article }) => {
-    axiosWithAuth().put(`http://localhost:9000/api/articles/:${article_id}`,article)
+  const updateArticle = ( article_id, article ) => {
+    axiosWithAuth().put(`http://localhost:9000/api/articles/${article_id}`,article)
       .then(res => {
         setArticles(
           articles.map(art =>{
@@ -110,7 +110,7 @@ export default function App() {
   }
 
   const deleteArticle = article_id => {
-    axiosWithAuth().delete(`http://localhost:9000/api/articles/:${article_id}`)
+    axiosWithAuth().delete(`http://localhost:9000/api/articles/${article_id}`)
       .then(res => {
         setArticles(
           articles.filter(art => 
