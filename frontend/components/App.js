@@ -6,6 +6,7 @@ import Message from './Message'
 import ArticleForm from './ArticleForm'
 import Spinner from './Spinner'
 import axiosWithAuth from '../axios'
+import PrivateRoute from './PrivateRoute'
 
 const articlesUrl = 'http://localhost:9000/api/articles'
 const loginUrl = 'http://localhost:9000/api/login'
@@ -122,6 +123,7 @@ export default function App() {
       .catch(err => console.log(err))
   }
 
+
   return (
     // ✨ fix the JSX: `Spinner`, `Message`, `LoginForm`, `ArticleForm` and `Articles` expect props ❗
     <>
@@ -132,15 +134,15 @@ export default function App() {
         <h1>Advanced Web Applications</h1>
         <nav>
           <NavLink id="loginScreen" to="/">Login</NavLink>
-          <NavLink id="articlesScreen" to="/articles">Articles</NavLink>
+          <NavLink id="articlesScreen" to={localStorage.getItem('token') ? "/articles" : '/'}>Articles</NavLink>
         </nav>
         <Routes>
           <Route path="/" element={<LoginForm login={login}/>} />
           <Route path="articles" element={
-            <>
+            <PrivateRoute> 
               <ArticleForm postArticle={postArticle} updateArticle={updateArticle} setCurrentArticleId={setCurrentArticleId} currentArticle={currentArticle}/>
               <Articles articles={articles} getArticles={getArticles} deleteArticle={deleteArticle} currentArticleId={currentArticleId} setCurrentArticleId={setCurrentArticleId}/>
-            </>
+            </PrivateRoute>
           } />
         </Routes>
         <footer>Bloom Institute of Technology 2022</footer>
