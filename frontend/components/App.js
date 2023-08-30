@@ -16,6 +16,7 @@ export default function App() {
   const [articles, setArticles] = useState([])
   const [currentArticleId, setCurrentArticleId] = useState()
   const [spinnerOn, setSpinnerOn] = useState(false)
+  const currentArticle = articles.filter(art => (art.article_id === currentArticleId))[0] || null
 
   // ✨ Research `useNavigate` in React Router v.6
   const navigate = useNavigate()
@@ -23,7 +24,9 @@ export default function App() {
   const redirectToArticles = () => { navigate('/articles') }
 
   const logout = () => {
-    // ✨ implement
+    localStorage.removeItem('token');
+    setMessage('Goodbye!');
+    redirectToLogin();
     // If a token is in local storage it should be removed,
     // and a message saying "Goodbye!" should be set in its proper state.
     // In any case, we should redirect the browser back to the login screen,
@@ -31,7 +34,6 @@ export default function App() {
   }
 
   const login = ({ username, password }) => {
-    // ✨ implement
     // We should flush the message state, turn on the spinner
     // and launch a request to the proper endpoint.
     setMessage('');
@@ -50,7 +52,18 @@ export default function App() {
   }
 
   const getArticles = () => {
-    // ✨ implement
+    setMessage('');
+    setSpinnerOn(true);
+    axiosWithAuth().get(articlesUrl)
+      .then(res => {
+        setArticles(res.data.articles);
+        setMessage(res.data.message);
+        setSpinnerOn(false);
+      })
+      .catch(err => {
+        console.log(err);
+        redirectToLogin();
+      })
     // We should flush the message state, turn on the spinner
     // and launch an authenticated request to the proper endpoint.
     // On success, we should set the articles in their proper state and
@@ -61,19 +74,52 @@ export default function App() {
   }
 
   const postArticle = article => {
-    // ✨ implement
+    setMessage('');
+    setSpinnerOn(true);
+    axiosWithAuth().post(articlesUrl, article)
+      .then(res => {
+        setArticles([
+          ...articles,
+          res.data.article
+        ])
+        setMessage(res.data.message)
+        setSpinnerOn(false)
+      })
+      .catch(err => {
+        console.log(err);
+        
+      })
     // The flow is very similar to the `getArticles` function.
     // You'll know what to do! Use log statements or breakpoints
     // to inspect the response from the server.
   }
 
   const updateArticle = ({ article_id, article }) => {
-    // ✨ implement
-    // You got this!
+    axiosWithAuth().put(`http://localhost:9000/api/articles/:${article_id}`,article)
+      .then(res => {
+        setArticles(
+          articles.map(art =>{
+            if(art.article_id === res.data.article.article_id){
+              return res.data.article
+            }else return art;
+          })
+        )
+        setMessage(res.data.message);
+      })
+      .catch(err => console.log(err));
   }
 
   const deleteArticle = article_id => {
-    // ✨ implement
+    axiosWithAuth().delete(`http://localhost:9000/api/articles/:${article_id}`)
+      .then(res => {
+        setArticles(
+          articles.filter(art => 
+            (art.article_id !== article_id)
+          )
+        )
+        setMessage(res.data.message)
+      })
+      .catch(err => console.log(err))
   }
 
   return (
@@ -92,7 +138,7 @@ export default function App() {
           <Route path="/" element={<LoginForm login={login}/>} />
           <Route path="articles" element={
             <>
-              <ArticleForm postArticle={postArticle} updateArticle={updateArticle} setCurrentArticleId={setCurrentArticleId}/>
+              <ArticleForm postArticle={postArticle} updateArticle={updateArticle} setCurrentArticleId={setCurrentArticleId} currentArticle={currentArticle}/>
               <Articles articles={articles} getArticles={getArticles} deleteArticle={deleteArticle} currentArticleId={currentArticleId} setCurrentArticleId={setCurrentArticleId}/>
             </>
           } />
